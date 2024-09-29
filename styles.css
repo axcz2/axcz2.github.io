@@ -190,8 +190,8 @@ h1, h2 {
     border-radius: 30px;
     text-decoration: none;
     transition: all 0.3s ease;
-    pointer-events: none;
-    opacity: 0.5;
+    pointer-events: none; /* Deshabilitar eventos inicialmente */
+    opacity: 0.5; /* Para que el botón esté menos visible al principio */
     transform: scale(0.95);
 }
 
@@ -202,11 +202,12 @@ h1, h2 {
 }
 
 .download-btn:enabled {
-    pointer-events: auto;
-    opacity: 1;
+    pointer-events: auto; /* Habilitar eventos al final del temporizador */
+    opacity: 1; /* Asegurarse de que sea visible */
     transform: scale(1);
     animation: pulse 2s infinite ease-in-out;
 }
+
 
 /* Temporizador */
 #timer-text {
