@@ -1,0 +1,78 @@
+/* Estilos generales */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #e9ecef;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Contenedor principal */
+.container {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    text-align: center;
+}
+
+/* Encabezado y párrafos */
+h1 {
+    color: #333;
+}
+
+p {
+    color: #555;
+    font-size: 18px;
+    line-height: 1.5;
+}
+
+/* Lista de características */
+.game-info ul {
+    list-style-type: disc;
+    text-align: left;
+    padding-left: 40px;
+    margin-bottom: 20px;
+}
+
+/* Instrucciones */
+.instructions ol {
+    list-style-type: decimal;
+    text-align: left;
+    padding-left: 40px;
+    margin-bottom: 20px;
+}
+
+/* Botón de descarga */
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    padding: 15px 25px;
+    font-size: 18px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    pointer-events: none; /* Deshabilitar inicialmente */
+    opacity: 0.5; /* Mostrar como deshabilitado */
+}
+
+.download-btn:hover {
+    background-color: #218838;
+}
+
+.download-btn:enabled {
+    pointer-events: auto; /* Habilitar al final */
+    opacity: 1; /* Hacer visible como habilitado */
+}
+
+/* Texto del temporizador */
+#timer-text {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 15px;
+}
